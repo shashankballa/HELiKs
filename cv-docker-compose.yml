@@ -1,0 +1,40 @@
+version: '3'
+services:
+  party1:
+    image: heliks
+    container_name: Server
+    environment:
+      - H=56
+      - FH=1
+      - CI=64
+      - CO=256
+      - S=1
+      - P=0
+      - O=1111
+    command: bash -c "./conv-HE r=1 h=$H f=$FH i=$CI o=$CO s=$S pl=$P pr=$P nt=4 op=$O ip=192.168.0.100"
+    networks:
+      my_network:
+        ipv4_address: 192.168.0.100
+
+  party2:
+    image: heliks
+    container_name: Client
+    environment:
+      - H=56
+      - FH=1
+      - CI=64
+      - CO=256
+      - S=1
+      - P=0
+      - O=1111
+    command: bash -c "./conv-HE r=2 h=$H f=$FH i=$CI o=$CO s=$S pl=$P pr=$P nt=4 op=$O ip=192.168.0.100"
+    networks:
+      my_network:
+        ipv4_address: 192.168.0.101
+        
+networks:
+  my_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.0.0/24

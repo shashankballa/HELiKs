@@ -1,0 +1,16 @@
+FROM ubuntu:22.04
+
+RUN apt-get update
+RUN apt-get -y install g++ git cmake make libgmp-dev \
+    libmpfr-dev libssl-dev
+
+RUN mkdir -p /heliks_ofhe
+WORKDIR /heliks_ofhe
+RUN git clone https://github.com/openfheorg/openfhe-development.git
+WORKDIR /heliks_ofhe/openfhe-development
+RUN mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=/heliks_ofhe/ && make -j4 && make install
+
+WORKDIR /heliks_ofhe
+COPY /heliks_ofhe .
+RUN mkdir build && cd build/ && cmake .. -DCMAKE_INSTALL_PREFIX=/heliks_ofhe/ && make && cd ..
+WORKDIR /heliks_ofhe

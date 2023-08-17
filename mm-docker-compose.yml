@@ -1,0 +1,32 @@
+version: '3'
+services:
+  party1:
+    image: heliks
+    container_name: Server
+    environment:
+      - N=4096
+      - C=4096
+      - O=110000001
+    command: bash -c "./fc-HE t=4 r=1 n=$N c=$C o=$O ip=192.168.0.100"
+    networks:
+      my_network:
+        ipv4_address: 192.168.0.100
+
+  party2:
+    image: heliks
+    container_name: Client
+    environment:
+      - N=4096
+      - C=4096
+      - O=110000001
+    command: bash -c "./fc-HE t=4 r=2 n=$N c=$C o=$O ip=192.168.0.100"
+    networks:
+      my_network:
+        ipv4_address: 192.168.0.101
+        
+networks:
+  my_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.0.0/24

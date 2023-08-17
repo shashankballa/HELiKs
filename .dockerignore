@@ -1,0 +1,8 @@
+# Ignore shell scripts and log files for mat_mul
+mm*
+cv*
+zz_logs/*
+
+# Ignore docker files
+docker*
+Docker*

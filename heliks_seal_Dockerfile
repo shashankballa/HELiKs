@@ -1,0 +1,13 @@
+FROM ubuntu:22.04
+
+RUN apt-get update
+RUN apt-get -y install g++ git cmake make libgmp-dev \
+    libmpfr-dev libssl-dev
+RUN mkdir -p /heliks_seal
+WORKDIR /heliks_seal
+COPY . .
+WORKDIR /heliks_seal/SCI/build
+RUN cmake -DCMAKE_INSTALL_PREFIX=./install \
+    -DCMAKE_CXX_FLAGS="-w" .. -DBUILD_TESTS=ON
+RUN cmake --build . --target install --parallel
+WORKDIR /heliks_seal/SCI/build/bin

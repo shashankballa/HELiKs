@@ -1,0 +1,28 @@
+# Build Directory
+build/
+bin/
+
+# Vim c_tags files
+c_*
+
+# Vim c_tags files
+
+# Visual Studio Code
+.vscode/*
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+.vscode/extensions.json
+.vscode/*.code-snippets
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+# Log files
+logs/*
+mm_log*
+cv_log*
+zz_logs/*
