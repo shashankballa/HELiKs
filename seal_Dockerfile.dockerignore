@@ -3,6 +3,9 @@ mm*
 cv*
 zz_logs/*
 
+# Ignore openfhe files
+heliks_ofhe/*
+
 # Ignore docker files
 docker*
 Docker*

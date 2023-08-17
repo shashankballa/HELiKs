@@ -1,7 +1,7 @@
 version: '3'
 services:
   party1:
-    image: heliks
+    image: heliks_seal
     container_name: Server
     environment:
       - H=56
@@ -17,7 +17,7 @@ services:
         ipv4_address: 192.168.0.100
 
   party2:
-    image: heliks
+    image: heliks_seal
     container_name: Client
     environment:
       - H=56

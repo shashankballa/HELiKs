@@ -1,0 +1,14 @@
+version: '3'
+services:
+  party1:
+    image: heliks_ofhe
+    container_name: heliks-ofhe
+    environment:
+      - H=56
+      - FH=1
+      - CI=64
+      - CO=256
+      - S=1
+      - P=0
+      - O=1111
+    command: bash -c "./build/test 1 ${H} ${FH} ${CI} ${CO} ${S} ${P} ${O}"

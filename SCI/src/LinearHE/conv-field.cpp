@@ -1833,7 +1833,7 @@ void ConvField::non_strided_conv_MR(int32_t H, int32_t W, int32_t CI, int32_t FH
     vector<Ciphertext> noise_ct = HE_preprocess_noise(
         secret_share, data, *encryptor_, *encoder_, *evaluator_);
 
-    if (verbose) {
+    if (data.print_cnts) {
       prep_noise_time = sw.lap();
       cout << "[Server] HE_preprocess_noise runtime:" << prep_noise_time << endl;
       cout << "[Server] Noise processed. Shape: (";
@@ -1848,7 +1848,7 @@ void ConvField::non_strided_conv_MR(int32_t H, int32_t W, int32_t CI, int32_t FH
                                           , rot_maps
                                           );
 
-    if (verbose) {
+    if (data.print_cnts) {
       prep_mat_time = sw.lap();
       cout << "[Server] HE_preprocess_filters_OP_MR runtime:" << prep_mat_time << endl;
       cout << "[Server] Filters processed. Shape: (";
@@ -1911,7 +1911,7 @@ void ConvField::non_strided_conv_MR(int32_t H, int32_t W, int32_t CI, int32_t FH
     PRINT_NOISE_BUDGET(decryptor_, result[0], "after mod-switch");
 #endif
 
-    if (verbose) {
+    if (data.print_cnts) {
       processing_time = sw.lap();
       cout << "[Server] Total online processing time: ";
       cout << processing_time << endl;

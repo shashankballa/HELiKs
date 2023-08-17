@@ -82,7 +82,7 @@ struct ConvMetadata {
   int64_t min;
   int64_t max;
 
-  bool print_counts;
+  bool print_cnts;
   bool use_heliks;
 };
 
@@ -155,7 +155,7 @@ class ConvField {
   lbcrypto::KeyPair<lbcrypto::DCRTPoly> keys;
 
   ConvField(){};
-  ConvField(int ring_dim);
+  ConvField(int ring_dim, bool use_heliks = true);
 
   int64_t get_prime_mod() { return data.prime_mod; };
 
@@ -174,6 +174,13 @@ class ConvField {
             vector<int> &counts,
             bool verbose = false);
 
+  void non_strided_conv_MR(int32_t H, int32_t W, int32_t CI, int32_t FH,
+            int32_t FW, int32_t CO, std::vector<std::vector<std::vector<int64_t>>> *image, 
+            std::vector<std::vector<std::vector<std::vector<int64_t>>>> *filters,
+            std::vector<std::vector<std::vector<int64_t>>> &outArr,
+            vector<int> &counts,
+            bool verbose = false);
+
   void convolution(int32_t N, int32_t H, int32_t W, int32_t CI, int32_t FH, int32_t FW,
             int32_t CO, int32_t zPadHLeft, int32_t zPadHRight, int32_t zPadWLeft,
             int32_t zPadWRight, int32_t strideH, int32_t strideW,
@@ -181,17 +188,6 @@ class ConvField {
             const std::vector<std::vector<std::vector<std::vector<int64_t>>>> &filterArr,
             std::vector<std::vector<std::vector<std::vector<int64_t>>>> &outArr,
             std::vector<bool> options = {false, false, false, false});
-
-  void verify(int H, int W, int CI, int CO, std::vector<std::vector<std::vector<int64_t>>> &image,
-            const std::vector<std::vector<std::vector<std::vector<int64_t>>>> *filters,
-            const std::vector<std::vector<std::vector<std::vector<int64_t>>>> &outArr);
-
-  void non_strided_conv_MR(int32_t H, int32_t W, int32_t CI, int32_t FH,
-            int32_t FW, int32_t CO, std::vector<std::vector<std::vector<int64_t>>> *image, 
-            std::vector<std::vector<std::vector<std::vector<int64_t>>>> *filters,
-            std::vector<std::vector<std::vector<int64_t>>> &outArr,
-            vector<int> &counts,
-            bool verbose = false);
 
   void convolution_MR(int32_t N, int32_t H, int32_t W, int32_t CI, int32_t FH, int32_t FW,
             int32_t CO, int32_t zPadHLeft, int32_t zPadHRight, int32_t zPadWLeft,
@@ -201,20 +197,17 @@ class ConvField {
             std::vector<std::vector<std::vector<std::vector<int64_t>>>> &outArr,
             std::vector<bool> options = {false, false, true, false});
 
-  void non_strided_conv_NTT_MR(int32_t H, int32_t W, int32_t CI, int32_t FH,
-            int32_t FW, int32_t CO, std::vector<std::vector<std::vector<int64_t>>> *image, 
-            std::vector<std::vector<std::vector<std::vector<int64_t>>>> *filters,
-            std::vector<std::vector<std::vector<int64_t>>> &outArr,
-            vector<int> &counts,
-            bool verbose = false);
-
-  void convolution_NTT_MR(int32_t N, int32_t H, int32_t W, int32_t CI, int32_t FH, int32_t FW,
+  void convolution_heliks(int32_t N, int32_t H, int32_t W, int32_t CI, int32_t FH, int32_t FW,
             int32_t CO, int32_t zPadHLeft, int32_t zPadHRight, int32_t zPadWLeft,
             int32_t zPadWRight, int32_t strideH, int32_t strideW,
             const std::vector<std::vector<std::vector<std::vector<int64_t>>>> &inputArr,
             const std::vector<std::vector<std::vector<std::vector<int64_t>>>> &filterArr,
             std::vector<std::vector<std::vector<std::vector<int64_t>>>> &outArr,
             std::vector<bool> options = {false, false, true, false});
+
+  void verify(int H, int W, int CI, int CO, std::vector<std::vector<std::vector<int64_t>>> &image,
+            const std::vector<std::vector<std::vector<std::vector<int64_t>>>> *filters,
+            const std::vector<std::vector<std::vector<std::vector<int64_t>>>> &outArr);
 
 };
 

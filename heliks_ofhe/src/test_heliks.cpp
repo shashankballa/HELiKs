@@ -121,6 +121,7 @@ void conv_test(int argc, char* argv[]){
     }
     bool verify_output = options.at(0);
     bool verbose = options.at(1);
+    bool use_heliks = options.at(2);
 
     int ring_dim = 1 << 13;
 
@@ -132,7 +133,7 @@ void conv_test(int argc, char* argv[]){
     cout << "+ Padding: " << pad_l     << "x" << pad_r    << endl;
     
 
-    ConvField conv_he(ring_dim);
+    ConvField conv_he(ring_dim, use_heliks);
     
     int32_t prime_mod = conv_he.get_prime_mod();
     int scaling_factor = 8;
@@ -205,9 +206,11 @@ void conv_test(int argc, char* argv[]){
     // INIT_TIMER;
     // uint64_t comm_start_NTT = he_conv_SB.io->counter;
     // START_TIMER;
-    conv_he.convolution_NTT_MR(N, H, W, CI, FH, FW, CO, zPadHLeft, zPadHRight, zPadWLeft,
+
+    conv_he.convolution(N, H, W, CI, FH, FW, CO, zPadHLeft, zPadHRight, zPadWLeft,
                         zPadWRight, strideH, strideW, inputArr, filterArr, outArr,
                         options);
+
     // STOP_TIMER("Conv-NTT " + roles[party-1]);
     // uint64_t comm_end_NTT = he_conv_SB.io->counter;
     // cout << "Conv-NTT " << roles[party-1] << " Sent: " << (comm_end_NTT - comm_start_NTT) / (1.0 * (1ULL << 20))

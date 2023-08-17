@@ -25,4 +25,8 @@ c_*
 logs/*
 mm_log*
 cv_log*
+seal_mm_log*
+seal_cv_log*
+ofhe_mm_log*
+ofhe_cv_log*
 zz_logs/*
