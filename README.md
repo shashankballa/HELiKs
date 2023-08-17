@@ -7,7 +7,7 @@ This repositository contains the code for the paper:
 The SEAL version of the kernels are implemented in the EzPC framework. The EzPC framework is available at https://github.com/mpc-msri/EzPC. To build and run the experiments presented in the paper, please follow these instructions:
 1. Build the docker image `heliks_seal` using `heliks_seal_Dockerfile`:
 ```
-docker build -t heliks_seal . -f heliks_Dockerfile
+docker build -t heliks_seal . -f heliks_seal_Dockerfile
 ```
 2. Run the tests, `mm_tests_seal.sh` and `cv_tests_seal.sh` for the matrix multiplication and convolution kernels respectively. The tests can be run using the following command:
 ```
