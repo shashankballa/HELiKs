@@ -890,20 +890,17 @@ int64_t *fc_postprocess(vector<Ciphertext<DCRTPoly>> &ct,
 /*
   Initializes the FCFIeld object with parameters from CryptFlow2.
 */
-FCField::FCField(int ring_dim) {
+FCField::FCField(int ring_dim, int mult_depth, int64_t prime_mod, bool verbose) {
   CCParams<CryptoContextBGVRNS> parameters;
-  int64_t prime_mod = 65537;
 
   data.min = -1; // -(prime_mod / 2);
   data.max = +1; // (prime_mod / 2) - 1;
-
-  int mult_depth = 1;
+  data.prime_mod = prime_mod;
   
-  parameters.SetPlaintextModulus(prime_mod);
+  parameters.SetPlaintextModulus(data.prime_mod);
   parameters.SetMultiplicativeDepth(mult_depth);
   parameters.SetRingDim(ring_dim);
   data.slot_count = parameters.GetRingDim();
-  data.prime_mod = prime_mod;
 
   cc = GenCryptoContext(parameters);
 
@@ -931,6 +928,13 @@ FCField::FCField(int ring_dim) {
   vector<int64_t> zero_vec(data.slot_count, 0);
   Plaintext zero_pt = cc->MakePackedPlaintext(zero_vec);
   zero = cc->Encrypt(keys.publicKey, zero_pt);
+
+  if(verbose){
+    cout << "[FCField] HE Parameters: " << endl;
+    cout << "+ ring_dim   : " << data.slot_count << endl;
+    cout << "+ mult_depth : " << mult_depth << endl;
+    cout << "+ prime_mod  : " << data.prime_mod << endl;
+  }
 }
 
 /* not used

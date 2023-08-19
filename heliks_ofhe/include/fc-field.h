@@ -141,7 +141,8 @@ public:
   lbcrypto::KeyPair<lbcrypto::DCRTPoly> keys;
 
   FCField(){};
-  FCField(int ring_dim);
+  FCField(int ring_dim, int mult_depth = 1, 
+          int64_t prime_mod = 65537, bool verbose = false);
   // FCField(int party, sci::NetIO *io);
   // FCField(int party, sci::NetIO *io, std::vector<int> coeff_modulus, 
   //         size_t slot_count, bool verbose = false);

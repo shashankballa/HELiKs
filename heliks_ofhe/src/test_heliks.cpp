@@ -31,7 +31,6 @@ void matmul_test(int argc, char* argv[]){
                             false  // options[9] -> use_tiling
                             };
 
-
     string options_str;
     if(argc > 3) options_str = argv[4];
 
@@ -39,8 +38,12 @@ void matmul_test(int argc, char* argv[]){
         options.at(i) = options_str.at(i) == '1';
     }
 
-    int     ring_dim = 1 << 13;
-    if(argc > 5) ring_dim = atoi(argv[5]);
+    bool verbose = options.at(1);
+    bool mul_then_rot = options.at(2);
+    bool use_tiling = options.at(9);
+
+    int ring_dim;
+    // if(argc > 5) ring_dim = atoi(argv[5]);
 
     int32_t num_rows   = dims.at(0);
     int32_t common_dim = dims.at(1);
@@ -48,24 +51,28 @@ void matmul_test(int argc, char* argv[]){
 
     cout << "[matmul_test] (" << num_rows << " x " << common_dim;
     cout << ") Options: " << options_str << endl;
+
+    if(!use_tiling){
+        ring_dim = 
+            max(1 << 14,
+                max(2 * ceil2Pow(common_dim), 
+                    ceil2Pow(num_rows)));
+    } else {
+        ring_dim = 1 << 13;
+    }
     
+    int32_t prime_mod = 65537;
 
-    FCField fc_he(ring_dim);
-    
-    int32_t prime_mod = fc_he.get_prime_mod();
+    FCField *fc_he;
 
-    int scaling_factor = 8;
-    int data_max = fc_he.data.max; // (prime_mod/scaling_factor)-1;
-    int data_min = fc_he.data.min; // -(prime_mod/scaling_factor);
+    if(!mul_then_rot){
+        fc_he = new FCField(ring_dim, 2, prime_mod, verbose);
+    }else{
+        fc_he = new FCField(ring_dim, 1, prime_mod, verbose);
+    }
 
-    auto A = gen2D_UID_int64(num_rows, common_dim, data_min, data_max);
-    auto B = gen2D_UID_int64(common_dim, num_cols, data_min, data_max);
-
-    cout << " A: " << endl; 
-    print2D(A, 1, 8, 8);
-
-    cout << " B: " << endl; 
-    print2D(B, 1, 8, 8 );
+    auto A = gen2D_UID_int64(num_rows, common_dim, fc_he->data.min, fc_he->data.max);
+    auto B = gen2D_UID_int64(common_dim, num_cols, fc_he->data.min, fc_he->data.max);
 
     vector<vector<int64_t>> AB(num_rows, vector<int64_t>(num_cols, 0));
 
@@ -82,7 +89,7 @@ void matmul_test(int argc, char* argv[]){
 
     vector<vector<int64_t>> C(num_rows, vector<int64_t>(num_cols, 0));
 
-    fc_he.matrix_multiplication(num_rows, common_dim, num_cols, A, B, C, options);
+    fc_he->matrix_multiplication(num_rows, common_dim, num_cols, A, B, C, options);
 }
 
 void conv_test(int argc, char* argv[]){
