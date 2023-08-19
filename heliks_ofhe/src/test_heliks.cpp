@@ -52,16 +52,19 @@ void matmul_test(int argc, char* argv[]){
     cout << "[matmul_test] (" << num_rows << " x " << common_dim;
     cout << ") Options: " << options_str << endl;
 
+
+    ring_dim = mul_then_rot ? 1 << 13 : 1 << 14;
+
     if(!use_tiling){
         ring_dim = 
-            max(1 << 14,
+            max(ring_dim,
                 max(2 * ceil2Pow(common_dim), 
                     ceil2Pow(num_rows)));
-    } else {
-        ring_dim = 1 << 13;
     }
     
-    int32_t prime_mod = 65537;
+    
+    int32_t prime_mod = 65537; //4293918721, 2147483649, 536903681, 65537
+    if(argc > 5) prime_mod = atoi(argv[5]);
 
     FCField *fc_he;
 
@@ -83,9 +86,6 @@ void matmul_test(int argc, char* argv[]){
             }
         }
     }
-
-    cout << "AB: "<< endl; 
-    print2D(AB, 1, 8, 8);
 
     vector<vector<int64_t>> C(num_rows, vector<int64_t>(num_cols, 0));
 
@@ -130,7 +130,21 @@ void conv_test(int argc, char* argv[]){
     bool verbose = options.at(1);
     bool use_heliks = options.at(2);
 
-    int ring_dim = 1 << 13;
+    int ring_dim = use_heliks ? 1 << 13 : 1 << 14;
+
+    int _paddedH = image_h + pad_l + pad_r;
+    int _limitH  = filter_h + ((_paddedH - filter_h) / stride) * stride;
+
+    for (int s_row = 0; s_row < stride; s_row++) {
+        for (int s_col = 0; s_col < stride; s_col++) {
+            int lH  = ((_limitH - s_row + stride - 1) / stride);
+            int lW  = lH;
+            int lFH = ((filter_h - s_row + stride - 1) / stride);
+            int lFW = lFH;
+
+            ring_dim = max(ring_dim, 2 * ceil2Pow(lH * lW));
+        }
+    }
 
     cout << "[conv_test] Parameters: " << endl;
     cout << "+ Image  : " << inp_chans << "x" << image_h  <<  "x" << image_h << endl;

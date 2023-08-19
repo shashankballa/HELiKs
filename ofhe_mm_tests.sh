@@ -1,3 +1,6 @@
+# Close old docker container
+O=1111111111 N=32768 C=32768 docker-compose -f ofhe_mm_docker-compose.yml down
+
 # Testing 64x64 
 # CF2
 O=1100000110 N=64   C=64   docker-compose -f ofhe_mm_docker-compose.yml up --remove-orphans
@@ -78,5 +81,5 @@ O=1110001110 N=32768 C=32768 docker-compose -f ofhe_mm_docker-compose.yml up --r
 # v2
 O=1111001111 N=32768 C=32768 docker-compose -f ofhe_mm_docker-compose.yml up --remove-orphans
 
-# Close the docker container
+# Close new docker container
 O=1111111111 N=32768 C=32768 docker-compose -f ofhe_mm_docker-compose.yml down

@@ -425,6 +425,7 @@ vector<Ciphertext<DCRTPoly>> fc_online_cf(vector<Ciphertext<DCRTPoly>> &cts,
       }
 
       cc->ModReduceInPlace(result);
+      cc->LevelReduceInPlace(result);
   //     evaluator.mod_switch_to_next_inplace(result);
   //     if(data.print_times) sw.lap(5);
 
@@ -901,8 +902,13 @@ FCField::FCField(int ring_dim, int mult_depth, int64_t prime_mod, bool verbose) 
   parameters.SetMultiplicativeDepth(mult_depth);
   parameters.SetRingDim(ring_dim);
   data.slot_count = parameters.GetRingDim();
+  parameters.SetKeySwitchCount(1);
+  // parameters.SetNumLargeDigits
 
   cc = GenCryptoContext(parameters);
+
+  auto evalAddCount = parameters.GetEvalAddCount();
+  auto keySwitchCount = parameters.GetKeySwitchCount();
 
   // Enable the features that you wish to use.
   cc->Enable(PKE);
@@ -931,9 +937,11 @@ FCField::FCField(int ring_dim, int mult_depth, int64_t prime_mod, bool verbose) 
 
   if(verbose){
     cout << "[FCField] HE Parameters: " << endl;
-    cout << "+ ring_dim   : " << data.slot_count << endl;
-    cout << "+ mult_depth : " << mult_depth << endl;
-    cout << "+ prime_mod  : " << data.prime_mod << endl;
+    cout << "+ ring_dim      : " << data.slot_count << endl;
+    cout << "+ mult_depth    : " << mult_depth << endl;
+    cout << "+ prime_mod     : " << data.prime_mod << endl;
+    cout << "+ evalAddCount  : " << evalAddCount << endl;
+    cout << "+ keySwitchCount: " << keySwitchCount << endl;
   }
 }
 
@@ -1111,6 +1119,15 @@ void FCField::matrix_multiplication(int32_t num_rows, int32_t common_dim,
       cout << "[Client] Vector (B) Generated" << endl;
 
     auto cts = preprocess_enc_vec(vec.data(), data, cc, keys.publicKey);
+
+    stringstream ct_ss;
+    for(auto ct : cts) ct_ss << cc->Compress(ct);
+
+    ct_ss.seekg(0, ios::end);
+    int ct_size = ct_ss.tellg();
+    ct_ss.seekg(0, ios::beg);
+
+    cout << "[Client] cts size: " << ct_size << endl;
     
 /*
     for (size_t i = 0; i < data.i_tiles; i++)
@@ -1275,6 +1292,15 @@ void FCField::matrix_multiplication(int32_t num_rows, int32_t common_dim,
       send_ciphertext(io, HE_result.at(ot));
 */
 
+    stringstream res_ct_ss;
+    for(auto ct : res_ct) res_ct_ss << cc->Compress(ct);
+
+    res_ct_ss.seekg(0, ios::end);
+    int res_ct_size = res_ct_ss.tellg();
+    res_ct_ss.seekg(0, ios::beg);
+
+    cout << "[Server] res_ct size: " << res_ct_size << endl;
+
     if (verbose)
       cout << "[Server] Result (C2  = A @ B2 + R) computed and sent" << endl;
 
@@ -1303,6 +1329,9 @@ void FCField::matrix_multiplication(int32_t num_rows, int32_t common_dim,
     cout << "[matmul] act_res: "; print1D(act_res, 2, 5);
     cout << "[matmul] exp_res: "; print1D(exp_res, 2, 5);
     cout << "[matmul] pass: " << boolalpha << pass << endl;
+    
+    cout << "[matmul] Client sent: " << ct_size << " bytes" << endl;
+    cout << "[matmul] Server sent: " << res_ct_size << " bytes" << endl;
 
 /*
 //     if (verify_output)

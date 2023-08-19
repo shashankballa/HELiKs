@@ -138,7 +138,7 @@ Ciphertext<DCRTPoly> rotate_arb2(Ciphertext<DCRTPoly> &ct, int rot,
  // Convert the steps to Near Adjacent Form (NAF)
   vector<int> naf_steps = naf(rot);
 
-  // cout << "+ [rotate_arb2] ring_dim:" << ring_dim << "; rot: " << rot << "; naf_steps: ";
+  // cout << "+ [rotate_arb2] ring_dim: " << ring_dim << "; rot: " << rot << "; naf_steps: ";
   for(auto step : naf_steps){
     // cout << step << " ";
     while (step > ring_dim/2){
@@ -1399,7 +1399,7 @@ vector<Ciphertext<DCRTPoly>> HE_conv_heliks(  vector<Ciphertext<DCRTPoly>> &inpu
     
     int in_idx = 0, fil_idx = data.filter_size - 1;
     
-    Ciphertext<DCRTPoly> conv = cc->EvalMult(input[in_idx], 
+    result[conv_idx] = cc->EvalMult(input[in_idx], 
                             masks[conv_idx][in_idx][fil_idx]); num_mul++;
 
     for(int in_idx = 1; in_idx < data.inp_ct; in_idx++){
@@ -1407,17 +1407,17 @@ vector<Ciphertext<DCRTPoly>> HE_conv_heliks(  vector<Ciphertext<DCRTPoly>> &inpu
       Ciphertext<DCRTPoly> partial_i = cc->EvalMult(input[in_idx], 
                             masks[conv_idx][in_idx][fil_idx]); num_mul++;
 
-      cc->EvalAddInPlace(conv, partial_i); num_add++;
+      cc->EvalAddInPlace(result[conv_idx], partial_i); num_add++;
     }
 
-    cc->ModReduceInPlace(conv); num_mod++;
+    cc->ModReduceInPlace(result[conv_idx]); num_mod++;
     num_mod++;
 
     for(int fil_idx = (data.filter_size - 2); fil_idx >= 0; fil_idx--){
 
       int rot_steps = ((fil_idx % data.filter_w) == (data.filter_w - 1)) ? data.output_w : 1;
       
-      conv = rotate_arb2(conv, rot_steps, cc); num_rot++;
+      result[conv_idx] = rotate_arb2(result[conv_idx], rot_steps, cc); num_rot++;
 
       Ciphertext<DCRTPoly> partial = cc->EvalMult(input[in_idx], 
                             masks[conv_idx][in_idx][fil_idx]); num_mul++;
@@ -1432,10 +1432,8 @@ vector<Ciphertext<DCRTPoly>> HE_conv_heliks(  vector<Ciphertext<DCRTPoly>> &inpu
       
       cc->ModReduceInPlace(partial); num_mod++;
 
-      cc->EvalAddInPlace(conv, partial); num_add++;
+      cc->EvalAddInPlace(result[conv_idx], partial); num_add++;
     }
-
-    result[conv_idx] = conv;
   }
 
   counts[0] += num_mul;
@@ -1497,7 +1495,7 @@ vector<Ciphertext<DCRTPoly>> HE_output_rotations_MR(vector<Ciphertext<DCRTPoly>>
       if (rot_amt != 0){
         // evaluator.rotate_rows_inplace(convs[conv_idx], rot_amt, gal_keys); num_rot++; 
         convs[conv_idx] = rotate_arb2(convs[conv_idx], rot_amt, cc); num_rot++;
-        // cout << "1. perm:" << perm << ", in_rot: " << in_rot  << ", convs idx: " << conv_idx  << ", rot_amt: " << rot_amt << endl;
+        // cout << "1. perm: " << perm << ", in_rot: " << in_rot  << ", convs idx: " << conv_idx  << ", rot_amt: " << rot_amt << endl;
       }
       if(in_rot == 0) {
         partials[perm] = convs[conv_idx];
@@ -1512,7 +1510,7 @@ vector<Ciphertext<DCRTPoly>> HE_output_rotations_MR(vector<Ciphertext<DCRTPoly>>
           // evaluator.rotate_rows_inplace(convs[conv_idx + data.half_rots], rot_amt,
           //                             gal_keys); num_rot++; 
           convs[conv_idx + data.half_rots] = rotate_arb2(convs[conv_idx + data.half_rots], rot_amt, cc); num_rot++;
-          // cout << "2. perm:" << perm << ", in_rot: " << in_rot  << ", convs idx: " << conv_idx + data.half_rots << ", rot_amt: " << rot_amt << endl;
+          // cout << "2. perm: " << perm << ", in_rot: " << in_rot  << ", convs idx: " << conv_idx + data.half_rots << ", rot_amt: " << rot_amt << endl;
         }
         if (in_rot == 0) {
           partials[perm + 1] = convs[conv_idx + data.half_rots];
@@ -1545,7 +1543,7 @@ vector<Ciphertext<DCRTPoly>> HE_output_rotations_MR(vector<Ciphertext<DCRTPoly>>
         // doesn't, add the two columns
         // evaluator.rotate_columns_inplace(partials[perm], gal_keys); num_rot++;
         partials[perm] = rotate_arb2(partials[perm], data.slot_count/2, cc); num_rot++;
-        // cout << "3. perm:" << perm << ", out_idx: " << out_idx << ", rot_cols" << endl;
+        // cout << "3. perm: " << perm << ", out_idx: " << out_idx << ", rot_cols" << endl;
         // evaluator.add_inplace(result[out_idx], partials[perm]); num_add++;
         cc->EvalAddInPlace(result[out_idx], partials[perm]); num_add++;
       }
@@ -1554,7 +1552,7 @@ vector<Ciphertext<DCRTPoly>> HE_output_rotations_MR(vector<Ciphertext<DCRTPoly>>
       if (data.half_perms > 1) {
         // evaluator.rotate_columns_inplace(partials[perm + 1], gal_keys); num_rot++; 
         partials[perm + 1] = rotate_arb2(partials[perm + 1], data.slot_count/2, cc); num_rot++;
-        // cout << "4. perm:" << perm << ", out_idx: " << out_idx  << ", rot_cols" << endl;
+        // cout << "4. perm: " << perm << ", out_idx: " << out_idx  << ", rot_cols" << endl;
         // evaluator.add_inplace(result[out_idx], partials[perm + 1]); num_add++;
         cc->EvalAddInPlace(result[out_idx], partials[perm + 1]); num_add++;
       }
@@ -1574,7 +1572,7 @@ vector<Ciphertext<DCRTPoly>> HE_output_rotations_MR(vector<Ciphertext<DCRTPoly>>
       if (data.half_perms > 1) {
         // evaluator.rotate_columns_inplace(partials[perm + 1], gal_keys); num_rot++; 
         partials[perm + 1] = rotate_arb2(partials[perm + 1], data.slot_count/2, cc); num_rot++;
-        // cout << "5. perm:" << perm << ", out_idx: " << out_idx  << ", rot_cols" << endl;
+        // cout << "5. perm: " << perm << ", out_idx: " << out_idx  << ", rot_cols" << endl;
         // evaluator.add_inplace(result[out_idx], partials[perm + 1]); num_add++;
         cc->EvalAddInPlace(result[out_idx], partials[perm + 1]); num_add++;
       }
@@ -1656,6 +1654,18 @@ void ConvField::non_strided_conv(int32_t H, int32_t W, int32_t CI, int32_t FH,
     if (verbose) cout << "[Client] Image preprocessed" << endl;
 
     auto ct = HE_encrypt(pt, data, cc, keys.publicKey);
+
+
+
+    stringstream ct_ss;
+    for(auto _ct : ct) ct_ss << cc->Compress(_ct);
+
+    ct_ss.seekg(0, ios::end);
+    int ct_size = ct_ss.tellg();
+    ct_ss.seekg(0, ios::beg);
+
+    cout << "[Client] ct size: " << ct_size << endl;
+
     if (verbose) cout << "[Client] Image encrypted and sent" << endl;
 
     int data_min = data.min;
@@ -1675,7 +1685,7 @@ void ConvField::non_strided_conv(int32_t H, int32_t W, int32_t CI, int32_t FH,
 
     if (data.print_cnts) {
       prep_noise_time = sw.lap();
-      cout << "[Server] HE_preprocess_noise runtime:" << prep_noise_time << endl;
+      cout << "[Server] HE_preprocess_noise runtime: " << prep_noise_time << endl;
       cout << "[Server] Noise processed. Shape: (";
       cout << noise_ct.size() << ")" << endl;
     }
@@ -1685,7 +1695,7 @@ void ConvField::non_strided_conv(int32_t H, int32_t W, int32_t CI, int32_t FH,
 
     if (data.print_cnts) {
       prep_mat_time = sw.lap();
-      cout << "[Server] HE_preprocess_filters_OP runtime:" << prep_mat_time << endl;
+      cout << "[Server] HE_preprocess_filters_OP runtime: " << prep_mat_time << endl;
       cout << "[Server] Filters processed. Shape: (";
       cout << masks_OP.size() << ", " << masks_OP[0].size() << ", ";
       cout << masks_OP[0][0].size() << ")" << endl;
@@ -1708,11 +1718,6 @@ void ConvField::non_strided_conv(int32_t H, int32_t W, int32_t CI, int32_t FH,
       if (verbose) {cout << "[Server] Convolution done. Shape: (";
       cout << conv_result.size() << ")" << endl;}
 
-      auto result = HE_output_rotations_MR(conv_result, data,cc,
-                                      zero, noise_ct
-                                      , counts
-                                      );
-      if (verbose) cout << "[Server] Output Rotations done" << endl;
     } else {
       rotations = filter_rotations(ct, data, cc
                                   , counts
@@ -1725,13 +1730,15 @@ void ConvField::non_strided_conv(int32_t H, int32_t W, int32_t CI, int32_t FH,
                       );
       if (verbose) {cout << "[Server] Convolution done. Shape: (";
       cout << conv_result.size() << ")" << endl;}
+    }
 
-      result = HE_output_rotations(conv_result, data, cc,
-                                  zero, noise_ct
-                                  , counts
-                                  );
-      if (verbose) cout << "[Server] Output Rotations done" << endl;
+    result = HE_output_rotations(conv_result, data, cc,
+                                zero, noise_ct
+                                , counts
+                                );
+    if (verbose) cout << "[Server] Output Rotations done" << endl;
 
+    if(!data.use_heliks){
       for (size_t ct_idx = 0; ct_idx < result.size(); ct_idx++) {
         // evaluator_->mod_switch_to_next_inplace(result[ct_idx]);
         cc->ModReduceInPlace(result[ct_idx]);
@@ -1746,9 +1753,20 @@ void ConvField::non_strided_conv(int32_t H, int32_t W, int32_t CI, int32_t FH,
       cout << "[Server] Result computed and sent" << endl;
     }
 
-    // auto HE_result = HE_decrypt(result, data, cc, keys.secretKey);
 
-    // if (verbose) cout << "[Client] Result received and decrypted" << endl;
+    stringstream res_ct_ss;
+    for(auto ct : result) res_ct_ss << cc->Compress(ct);
+
+    res_ct_ss.seekg(0, ios::end);
+    int res_ct_size = res_ct_ss.tellg();
+    res_ct_ss.seekg(0, ios::beg);
+
+    cout << "[Server] result size: " << res_ct_size << endl;
+
+    counts[6] += prep_mat_time;
+    counts[7] += processing_time;
+    counts[8] += ct_size;
+    counts[9] += res_ct_size;
 }
 
 /* non_strided_conv_MR
@@ -1802,7 +1820,7 @@ void ConvField::non_strided_conv_MR(int32_t H, int32_t W, int32_t CI, int32_t FH
 
     if (data.print_cnts) {
       prep_noise_time = sw.lap();
-      cout << "[Server] HE_preprocess_noise runtime:" << prep_noise_time << endl;
+      cout << "[Server] HE_preprocess_noise runtime: " << prep_noise_time << endl;
       cout << "[Server] Noise processed. Shape: (";
       cout << noise_ct.size() << ")" << endl;
     }
@@ -1816,7 +1834,7 @@ void ConvField::non_strided_conv_MR(int32_t H, int32_t W, int32_t CI, int32_t FH
                                           );
 
     if (data.print_cnts) {
-      cout << "[Server] HE_preprocess_filters_OP_MR runtime:" << prep_mat_time << endl;
+      cout << "[Server] HE_preprocess_filters_OP_MR runtime: " << prep_mat_time << endl;
       cout << "[Server] Filters processed. Shape: (";
       cout << masks_OP.size() << ", " << masks_OP[0].size() << ", ";
       cout << masks_OP[0][0].size() << ")" << endl;
@@ -2085,6 +2103,13 @@ void ConvField::convolution(int32_t N, int32_t H, int32_t W, int32_t CI, int32_t
       cout << "+ mod: " << counts[2] << endl;
       cout << "+ rot: " << counts[3] << endl;
     }
+    if(verbose){
+      cout << "[convolution] Offline pre-processing time: " << counts[6] << endl;
+      cout << "[convolution] Online processing time     : " << counts[7] << endl;
+      cout << "[convolution] Client sent: " << counts[8] << endl;
+      cout << "[convolution] Server sent: " << counts[9] << endl;
+    }
+
 }
 
 /* convolution_MR
