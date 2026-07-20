@@ -1,6 +1,3 @@
-
-This repositository contains the code for the paper:
-
 # HELiKs: HE Linear Algebra Kernels for Secure Inference
 
 First clone the repository and run the following commands from inside the `/HELiKs` root directory.
